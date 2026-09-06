@@ -88,6 +88,13 @@ pub struct ApiDoc;
 const SERVER_CSP: &str = "default-src 'self'; script-src 'self' 'sha256-OUUXM+aKkYdqwM38Z84FhgHpIYOk/e5Dz9UaAnwYXk8=' 'sha256-s/UhdlprnzFxx+iXOtDj2n/Jk+MSRz1g/1lyBtFatVw=' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline' blob:; img-src 'self' data: blob: https:; font-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://wealthfolio.app https://auth.wealthfolio.app https://connect.wealthfolio.app https://connect-staging.wealthfolio.app; frame-src 'none'; child-src 'self' blob: about:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self' blob:";
 const ADDON_SANDBOX_CSP: &str = "default-src 'none'; script-src 'sha256-s/UhdlprnzFxx+iXOtDj2n/Jk+MSRz1g/1lyBtFatVw=' 'wasm-unsafe-eval' blob:; style-src 'unsafe-inline' blob:; img-src data: blob:; font-src data: blob:; media-src data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'";
 
+/// Allowlist who may frame the app (e.g. a dashboard embedding it). Defaults to 'none'.
+fn base_server_csp() -> String {
+    let frame_ancestors =
+        std::env::var("WF_CSP_FRAME_ANCESTORS").unwrap_or_else(|_| "'none'".to_string());
+    SERVER_CSP.replace("frame-ancestors 'none'", &format!("frame-ancestors {frame_ancestors}"))
+}
+
 // Match the configured Connect issuer without granting access to arbitrary HTTPS hosts.
 fn application_csp(auth_url: Option<&str>) -> HeaderValue {
     let Some(origin) = auth_url
@@ -103,9 +110,10 @@ fn application_csp(auth_url: Option<&str>) -> HeaderValue {
         })
         .map(|url| url.origin().ascii_serialization())
     else {
-        return HeaderValue::from_static(SERVER_CSP);
+        return HeaderValue::from_str(&base_server_csp())
+            .unwrap_or_else(|_| HeaderValue::from_static(SERVER_CSP));
     };
-    let policy = SERVER_CSP.replacen(
+    let policy = base_server_csp().replacen(
         "connect-src 'self'",
         &format!("connect-src 'self' {origin}"),
         1,
