@@ -9,6 +9,14 @@ import { SidebarNav } from "./sidebar-nav";
 import { cardSurfaceClassName } from "@wealthfolio/ui/components/ui/card";
 import { cn } from "@/lib/utils";
 
+/**
+ * Embedded mode (e.g. a dashboard framing this app): hide integrations that
+ * assume a standalone install — Wealthfolio Connect and the AI surfaces.
+ * Market Data stays, it works fine embedded.
+ */
+const IS_IFRAMED = typeof window !== "undefined" && window.self !== window.top;
+
+
 export default function SettingsLayout() {
   const { t } = useTranslation();
   const location = useLocation();
@@ -103,22 +111,26 @@ export default function SettingsLayout() {
             subtitle: t("settings:nav.subtitles.market_data"),
             icon: <Icons.BarChart className="size-5" />,
           },
-          {
-            title: t("settings:nav.items.ai_providers"),
-            href: "ai-providers",
-            subtitle: t("settings:nav.subtitles.ai_providers"),
-            icon: <Icons.SparklesOutline className="size-5" />,
-          },
-          ...(hasMcpServer
-            ? [
+          ...(IS_IFRAMED
+            ? []
+            : [
                 {
-                  title: t("settings:nav.items.agent_access"),
-                  href: "agent-access",
-                  subtitle: t("settings:nav.subtitles.agent_access"),
-                  icon: <Icons.Brain className="size-5" />,
+                  title: t("settings:nav.items.ai_providers"),
+                  href: "ai-providers",
+                  subtitle: t("settings:nav.subtitles.ai_providers"),
+                  icon: <Icons.SparklesOutline className="size-5" />,
                 },
-              ]
-            : []),
+                ...(hasMcpServer
+                  ? [
+                      {
+                        title: t("settings:nav.items.agent_access"),
+                        href: "agent-access",
+                        subtitle: t("settings:nav.subtitles.agent_access"),
+                        icon: <Icons.Brain className="size-5" />,
+                      },
+                    ]
+                  : []),
+              ]),
         ],
       },
       {
