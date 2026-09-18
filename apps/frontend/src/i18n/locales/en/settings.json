@@ -611,7 +611,13 @@
     "mode_switch_checklist_accurate": "Dates, quantities & prices are accurate",
     "mode_switch_checklist_gaps": "Gaps in history will lead to incorrect balances & returns",
     "mode_switch_keep_holdings": "Keep Holdings",
-    "mode_switch_confirm": "Switch to Transactions"
+    "mode_switch_confirm": "Switch to Transactions",
+    "form_position_display_label": "Position Display",
+    "form_position_display_description": "Choose what the position panel shows as the title and subtitle",
+    "form_position_display_title": "Position title",
+    "form_position_display_subtitle": "Position subtitle",
+    "form_position_display_symbol": "Symbol",
+    "form_position_display_name": "Name"
   },
   "limits": {
     "day_left": "{{days}}d left"

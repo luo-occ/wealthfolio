@@ -651,7 +651,13 @@
     "mode_switch_checklist_accurate": "日期、数量和价格均准确无误",
     "mode_switch_checklist_gaps": "历史记录的空缺将导致余额和收益不正确",
     "mode_switch_keep_holdings": "保留持仓",
-    "mode_switch_confirm": "切换到交易"
+    "mode_switch_confirm": "切换到交易",
+    "form_position_display_label": "持仓显示",
+    "form_position_display_description": "选择持仓面板标题和副标题显示的内容",
+    "form_position_display_title": "标题字段",
+    "form_position_display_subtitle": "副标题字段",
+    "form_position_display_symbol": "代码",
+    "form_position_display_name": "名称"
   },
   "limits": {
     "day_left": "剩余 {{days}} 天"

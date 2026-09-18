@@ -32,6 +32,7 @@ import {
   AlternativeAssetKind,
 } from "@/lib/types";
 import { canAddHoldings } from "@/lib/activity-restrictions";
+import { getPositionDisplayFromMeta } from "@/lib/position-display";
 import { useIsMobileViewport } from "@/hooks/use-platform";
 import { HoldingsTable } from "./components/holdings-table";
 import { HoldingsTableMobile } from "./components/holdings-table-mobile";
@@ -102,6 +103,12 @@ export const HoldingsPage = () => {
         ? (accounts.find((account) => account.id === accountFilter.accountId) ?? null)
         : null,
     [accountFilter, accounts],
+  );
+
+  // Position-panel title/subtitle choice (cc fork, account-level meta config).
+  const positionDisplay = useMemo(
+    () => getPositionDisplayFromMeta(selectedAccount?.meta),
+    [selectedAccount],
   );
 
   const showClosedPositions = selectedAccount?.trackingMode !== "HOLDINGS";
@@ -543,6 +550,7 @@ export const HoldingsPage = () => {
               setVisibilityFilters={handleVisibilityFiltersChange}
               showClosedPositions={showClosedPositions}
               onClassify={handleClassify}
+              positionDisplay={positionDisplay}
             />
           </div>
 
@@ -568,6 +576,7 @@ export const HoldingsPage = () => {
               setVisibilityFilters={handleVisibilityFiltersChange}
               showClosedPositions={showClosedPositions}
               hasHiddenPositions={hasHiddenInvestmentPositions}
+              positionDisplay={positionDisplay}
               toolbarActions={
                 isMobileViewport && currentTab === "investments" ? (
                   <ActionPalette

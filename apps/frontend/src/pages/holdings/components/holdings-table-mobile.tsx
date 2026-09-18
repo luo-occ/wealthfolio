@@ -2,6 +2,7 @@ import { TickerAvatar } from "@/components/ticker-avatar";
 import { useBalancePrivacy } from "@/hooks/use-balance-privacy";
 import { HoldingType } from "@/lib/constants";
 import { formatOptionSubtitle, parseOccSymbol } from "@/lib/occ-symbol";
+import { DEFAULT_POSITION_DISPLAY, positionLabelPair, type PositionDisplayConfig } from "@/lib/position-display";
 import { Account, AccountScope, Holding } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
@@ -54,6 +55,9 @@ interface HoldingsTableMobileProps {
   showClosedPositions?: boolean;
   hasHiddenPositions?: boolean;
   toolbarActions?: ReactNode;
+  /** Account-level title/subtitle choice (cc fork): defaults to the upstream
+   *  rendering (symbol primary, name secondary). */
+  positionDisplay?: PositionDisplayConfig;
 }
 
 export const HoldingsTableMobile = ({
@@ -78,6 +82,7 @@ export const HoldingsTableMobile = ({
   showClosedPositions = true,
   hasHiddenPositions = false,
   toolbarActions,
+  positionDisplay = DEFAULT_POSITION_DISPLAY,
 }: HoldingsTableMobileProps) => {
   const numberFormatting = useNumberFormatting();
   const dateFormatting = useDateFormatting();
@@ -207,11 +212,17 @@ export const HoldingsTableMobile = ({
               : parsedOption
                 ? parsedOption.underlying
                 : symbol;
+            // Account-level display config (cc fork) applies to plain
+            // securities; cash and option rows keep their special subtitles.
+            const pair =
+              isCash || parsedOption
+                ? null
+                : positionLabelPair(positionDisplay, displaySymbol, holding.instrument?.name);
             const subtitle = isCash
               ? t("holdings:cash_balance")
               : parsedOption
                 ? formatOptionSubtitle(parsedOption, formatting)
-                : (holding.instrument?.name ?? null);
+                : (pair ? pair.secondary : (holding.instrument?.name ?? null));
             const isNavigable = !isCash && holding.instrument?.symbol;
 
             return (
@@ -234,7 +245,9 @@ export const HoldingsTableMobile = ({
                     />
                     <div className="flex-1 overflow-hidden">
                       <div className="flex items-center gap-1.5">
-                        <p className="truncate font-semibold">{displaySymbol}</p>
+                        <p className="truncate font-semibold">
+                          {pair ? pair.primary : displaySymbol}
+                        </p>
                         {isClosed && (
                           <Badge variant="outline" className="h-4 px-1 py-0 text-[10px]">
                             {t("holdings:closed")}

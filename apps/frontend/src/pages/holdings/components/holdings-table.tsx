@@ -26,6 +26,7 @@ import { HoldingPerformancePercent } from "@/components/holding-performance-perc
 import { useBalancePrivacy } from "@/hooks/use-balance-privacy";
 import { HoldingType } from "@/lib/constants";
 import { getBaseHoldingPerformancePercent } from "@/lib/holding-performance";
+import { DEFAULT_POSITION_DISPLAY, positionLabelPair, type PositionDisplayConfig } from "@/lib/position-display";
 import { useSettingsContext } from "@/lib/settings-provider";
 import { Holding, MonetaryValue } from "@/lib/types";
 import { AmountDisplay, PriceDisplay, QuantityDisplay } from "@wealthfolio/ui";
@@ -132,6 +133,7 @@ export const HoldingsTable = ({
   visibilityFilters,
   setVisibilityFilters,
   showClosedPositions = true,
+  positionDisplay = DEFAULT_POSITION_DISPLAY,
 }: {
   holdings: Holding[];
   isLoading: boolean;
@@ -139,6 +141,9 @@ export const HoldingsTable = ({
   visibilityFilters?: HoldingsVisibilityFilter[];
   setVisibilityFilters?: (value: HoldingsVisibilityFilter[]) => void;
   showClosedPositions?: boolean;
+  /** Account-level title/subtitle choice (cc fork): defaults to the upstream
+   *  rendering (symbol primary, name secondary). */
+  positionDisplay?: PositionDisplayConfig;
 }) => {
   const { t, i18n } = useTranslation();
   const formatting = useNumberFormatting();
@@ -223,6 +228,22 @@ export const HoldingsTable = ({
       options: assetsTypes,
     },
   ];
+
+  const columns = getColumns(
+    t,
+    isBalanceHidden,
+    showConvertedValues,
+    formatting,
+    dateFormatting,
+    navigate,
+    onClassify,
+    positionDisplay,
+  ).filter((column) => {
+    if (!("id" in column) || column.id == null) return false;
+    return isClosedView
+      ? CLOSED_POSITION_COLUMN_IDS.has(column.id)
+      : !CLOSED_ONLY_COLUMN_IDS.has(column.id);
+  });
 
   return (
     <div className="flex h-full flex-col">
@@ -312,6 +333,7 @@ const getColumns = (
   dateFormatting: Pick<FormattingApi, "formatCalendarDate">,
   navigate: NavigateFunction,
   onClassify?: (holding: Holding) => void,
+  positionDisplay: PositionDisplayConfig = DEFAULT_POSITION_DISPLAY,
 ): ColumnDef<Holding>[] => [
   {
     id: "symbol",
@@ -342,6 +364,13 @@ const getColumns = (
         ? formatOptionSubtitle(parsedOption, { ...formatting, ...dateFormatting })
         : null;
 
+      // Account-level display config (cc fork) applies to plain securities;
+      // cash and option rows keep their special subtitles.
+      const pair =
+        isCash || parsedOption
+          ? null
+          : positionLabelPair(positionDisplay, displaySymbol, holding.instrument?.name);
+
       const handleNavigate = () => {
         // Use instrument.id (asset ID) for navigation, not symbol (which may be stripped)
         const navSymbol = holding.instrument?.id ?? holding.id;
@@ -360,7 +389,7 @@ const getColumns = (
           />
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <span className="font-medium">{displaySymbol}</span>
+              <span className="font-medium">{pair ? pair.primary : displaySymbol}</span>
               {isManual && !isCash && (
                 <Badge variant="secondary" className="h-4 px-1 py-0 text-[10px]">
                   {t("holdings:manual")}
@@ -374,7 +403,11 @@ const getColumns = (
             </div>
             <span className="text-muted-foreground line-clamp-1 text-xs">
               {optionSubtitle ??
-                (isCash ? t("holdings:cash_balance") : holding.instrument?.name) ??
+                (isCash
+                  ? t("holdings:cash_balance")
+                  : pair
+                    ? pair.secondary
+                    : holding.instrument?.name) ??
                 null}
             </span>
           </div>

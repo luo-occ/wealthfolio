@@ -9,6 +9,7 @@ import { Switch } from "@wealthfolio/ui/components/ui/switch";
 
 import { newAccountSchema } from "@/lib/schemas";
 import { AccountType } from "@/lib/constants";
+import { getPositionDisplayFromMeta, setPositionDisplayInMeta, type PositionLabelField } from "@/lib/position-display";
 import { useTaxonomy } from "@/hooks/use-taxonomies";
 import { cn } from "@/lib/utils";
 import {
@@ -528,6 +529,63 @@ export function AccountForm({ defaultValues, onSuccess = () => undefined }: Acco
               </div>
             </section>
           </div>
+
+          {defaultValues?.id && (
+            <section className={formCardClassName}>
+              <h3 className={formSectionLabelClassName}>
+                {t("settings:accounts.form_position_display_label")}
+              </h3>
+              <p className="text-muted-foreground mt-1 text-xs">
+                {t("settings:accounts.form_position_display_description")}
+              </p>
+              <div className="mt-4 grid gap-4">
+                {(
+                  [
+                    { key: "positionTitle", labelKey: "form_position_display_title" },
+                    { key: "positionSubtitle", labelKey: "form_position_display_subtitle" },
+                  ] as const
+                ).map(({ key, labelKey }) => {
+                  const current = getPositionDisplayFromMeta(form.watch("meta"));
+                  const value = key === "positionTitle" ? current.positionTitle : current.positionSubtitle;
+                  const options: PositionLabelField[] =
+                    key === "positionTitle" ? ["symbol", "name"] : ["name", "symbol"];
+                  return (
+                    <div key={key} className="flex flex-col gap-2">
+                      <label className="text-sm font-medium">
+                        {t(`settings:accounts.${labelKey}`)}
+                      </label>
+                      <ToggleGroup
+                        type="single"
+                        value={value}
+                        onValueChange={(v) => {
+                          if (!v) return;
+                          const updatedMeta = setPositionDisplayInMeta(form.getValues("meta"), {
+                            [key]: v as PositionLabelField,
+                          });
+                          form.setValue("meta", updatedMeta, { shouldDirty: true });
+                        }}
+                        className="bg-muted grid h-11 grid-cols-2 rounded-lg p-1"
+                      >
+                        {options.map((field) => (
+                          <ToggleGroupItem
+                            key={field}
+                            value={field}
+                            className={cashClassificationItemClassName}
+                          >
+                            {t(
+                              field === "symbol"
+                                ? "settings:accounts.form_position_display_symbol"
+                                : "settings:accounts.form_position_display_name",
+                            )}
+                          </ToggleGroupItem>
+                        ))}
+                      </ToggleGroup>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           <div className="grid content-start gap-4">
             <FormField
