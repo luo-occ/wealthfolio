@@ -5,6 +5,7 @@ import { useHoldingsWithClosedProbe } from "@/hooks/use-holdings";
 import { useIsMobileViewport } from "@/hooks/use-platform";
 import { AccountType, isLiabilityAccountType } from "@/lib/constants";
 import { canAddHoldings } from "@/lib/activity-restrictions";
+import { getPositionDisplayFromMeta } from "@/lib/position-display";
 import { HoldingsTable } from "@/pages/holdings/components/holdings-table";
 import { HoldingsTableMobile } from "@/pages/holdings/components/holdings-table-mobile";
 import {
@@ -65,6 +66,12 @@ const AccountHoldings = ({
   const selectedAccount = useMemo(() => {
     return accounts?.find((acc) => acc.id === accountId) ?? null;
   }, [accounts, accountId]);
+
+  // Position-panel title/subtitle choice (cc fork, account-level meta config).
+  const positionDisplay = useMemo(
+    () => getPositionDisplayFromMeta(selectedAccount?.meta),
+    [selectedAccount],
+  );
 
   // Check if this is a HOLDINGS mode account
   const isHoldingsMode = useMemo(() => {
@@ -316,6 +323,7 @@ const AccountHoldings = ({
           setVisibilityFilters={handleVisibilityFiltersChange}
           showClosedPositions={showClosedPositions}
           hasHiddenPositions={hasHiddenPositions}
+          positionDisplay={positionDisplay}
         />
       ) : (
         <HoldingsTable
@@ -324,6 +332,7 @@ const AccountHoldings = ({
           visibilityFilters={effectiveVisibilityFilters}
           setVisibilityFilters={handleVisibilityFiltersChange}
           showClosedPositions={showClosedPositions}
+          positionDisplay={positionDisplay}
         />
       )}
     </div>
