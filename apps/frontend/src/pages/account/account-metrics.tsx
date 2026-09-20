@@ -1,7 +1,8 @@
 import { performancePeriodPnl, performanceSummaryReturn } from "@/lib/performance";
 import { isValuationComplete } from "@/lib/valuation";
+import type { BrokerSyncMarker } from "@/lib/account-meta";
 import { AccountValuation, CurrentValuationSplit, PerformanceResult } from "@/lib/types";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDistanceToNow, formatDate } from "@/lib/utils";
 import { PerformanceGrid } from "@/pages/account/performance-grid";
 import {
   Button,
@@ -22,6 +23,7 @@ import {
   TooltipTrigger,
   useDateFormatting,
   Spinner,
+  useLocalizationSettings,
 } from "@wealthfolio/ui";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -49,6 +51,9 @@ interface AccountMetricsProps {
     disabled?: boolean;
     isLoading?: boolean;
   };
+  /** cc pipeline sync-freshness marker parsed from account.meta — renders a
+   *  "last broker sync" line in the footer (absent for manual accounts). */
+  brokerSync?: BrokerSyncMarker | null;
 }
 
 interface CashCurrencyBreakdownProps {
@@ -101,9 +106,11 @@ const AccountMetrics: React.FC<AccountMetricsProps> = ({
   balanceLabel,
   isHoldingsMode = false,
   balanceWarning,
+  brokerSync,
 }) => {
   const dateFormatting = useDateFormatting();
   const [isEditingBalance, setIsEditingBalance] = useState(false);
+  const localizationSettings = useLocalizationSettings();
 
   const { t } = useTranslation();
   const resolvedBalanceLabel = balanceLabel ?? t("account:cash_balance");
@@ -263,6 +270,16 @@ const AccountMetrics: React.FC<AccountMetricsProps> = ({
     ? formatDate(valuation.calculatedAt, dateFormatting)
     : null;
 
+  // cc pipeline sync freshness: relative ("8h ago") with absolute on hover;
+  // failed runs surface their status in destructive red (owner decision
+  // 2026-09-19). No marker (manual accounts) → no line.
+  const FAILED_SYNC_STATUSES = new Set(["GATE_FAILED", "DEFECT", "FAILED"]);
+  const relativeSyncAt = brokerSync?.at
+    ? formatDistanceToNow(new Date(brokerSync.at), localizationSettings, { addSuffix: true })
+    : null;
+  const absoluteSyncAt = brokerSync?.at ? dateFormatting.formatDateTime(brokerSync.at) : null;
+  const syncFailed = brokerSync?.status ? FAILED_SYNC_STATUSES.has(brokerSync.status) : false;
+
   return (
     <>
       <Card className={cn("flex flex-col", className)}>
@@ -356,7 +373,24 @@ const AccountMetrics: React.FC<AccountMetricsProps> = ({
             isHoldingsMode={isHoldingsMode}
           />
         </CardContent>
-        <CardFooter className="mt-auto flex flex-col items-start gap-1 px-3 pt-0 pb-3">
+        <CardFooter className="mt-auto flex flex-col items-start gap-1 px-3 pb-3 pt-0">
+          {brokerSync && relativeSyncAt && (
+            <p className="text-muted-foreground m-0 flex items-center gap-1.5 p-0 text-xs">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="cursor-default">
+                      {t("account:broker_last_sync", { date: relativeSyncAt })}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{absoluteSyncAt}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              {syncFailed && <span className="text-destructive">· {brokerSync.status}</span>}
+            </p>
+          )}
           {performanceError ? (
             <p className="text-muted-foreground m-0 p-0 text-xs">
               {lastUpdated && <>{t("account:last_updated", { date: lastUpdated })}</>}
