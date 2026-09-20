@@ -106,6 +106,7 @@ import { AccountContributionLimit } from "./account-contribution-limit";
 import { AccountHeaderDetails } from "./account-header-details";
 import AccountHoldings from "./account-holdings";
 import AccountMetrics from "./account-metrics";
+import { getBrokerSyncFromMeta } from "@/lib/account-meta";
 import {
   buildCashAuditReviewTarget,
   getCurrentNegativeCashRun,
@@ -1183,6 +1184,7 @@ const AccountPage = () => {
                   performance={accountPerformance}
                   cashCurrencySplit={liveCurrentValuation?.summary.cashCurrencySplit}
                   className="min-h-0 grow"
+                  brokerSync={getBrokerSyncFromMeta(account?.meta)}
                   compact={showContributionLimitCard}
                   isLoading={isLoading}
                   isPerformanceLoading={isPerformanceHistoryLoading}
