@@ -154,5 +154,10 @@
   },
   "more_count_one": "+{{count}} more",
   "more_count_other": "+{{count}} more",
-  "broker_last_sync": "Broker sync · {{date}}"
+  "broker_sync": "Broker sync",
+  "broker_latest_data": "latest data {{date}}",
+  "origin_openapi_statements": "Via broker OpenAPI statements",
+  "origin_flex_query": "Via IBKR Flex query",
+  "origin_pdf_watch_folder": "Via statement PDFs (owner-dropped)",
+  "origin_gmail_statements": "Via statement emails (Gmail)"
 }

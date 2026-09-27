@@ -153,5 +153,10 @@
     "irr_hover_hint": " 将鼠标悬停在该值上以查看所选期间的 IRR。"
   },
   "more_count_other": "+{{count}} 更多",
-  "broker_last_sync": "上次同步 · {{date}}"
+  "broker_sync": "券商同步",
+  "broker_latest_data": "最新数据 {{date}}",
+  "origin_openapi_statements": "来源：券商 OpenAPI 对账单接口",
+  "origin_flex_query": "来源：IBKR Flex 报表",
+  "origin_pdf_watch_folder": "来源：对账单 PDF（手动导入）",
+  "origin_gmail_statements": "来源：Gmail 对账单邮件"
 }

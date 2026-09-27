@@ -292,14 +292,30 @@ const AccountMetrics: React.FC<AccountMetricsProps> = ({
     : null;
 
   // cc pipeline sync freshness: relative ("8h ago") with absolute on hover;
-  // failed runs surface their status in destructive red (owner decision
-  // 2026-09-19). No marker (manual accounts) → no line.
+  // status always shown (destructive red only for failed runs, owner
+  // decision 2026-09-19), plus the marker v2 latest-data frontier and
+  // origin line. No marker (manual accounts) → no line.
   const FAILED_SYNC_STATUSES = new Set(["GATE_FAILED", "DEFECT", "FAILED"]);
   const relativeSyncAt = brokerSync?.at
     ? formatDistanceToNow(new Date(brokerSync.at), localizationSettings, { addSuffix: true })
     : null;
   const absoluteSyncAt = brokerSync?.at ? dateFormatting.formatDateTime(brokerSync.at) : null;
   const syncFailed = brokerSync?.status ? FAILED_SYNC_STATUSES.has(brokerSync.status) : false;
+
+  const ORIGIN_LABEL_KEYS: Record<string, string> = {
+    openapi_statements: "account:origin_openapi_statements",
+    flex_query: "account:origin_flex_query",
+    pdf_watch_folder: "account:origin_pdf_watch_folder",
+    gmail_statements: "account:origin_gmail_statements",
+  };
+  const originLabel = brokerSync
+    ? brokerSync.origin && ORIGIN_LABEL_KEYS[brokerSync.origin]
+      ? t(ORIGIN_LABEL_KEYS[brokerSync.origin])
+      : (brokerSync.originDetail ?? brokerSync.origin ?? null)
+    : null;
+  const formattedThrough = brokerSync?.through
+    ? formatDate(brokerSync.through, dateFormatting)
+    : null;
 
   return (
     <Card className={cn("flex flex-col", className)}>
@@ -373,12 +389,21 @@ const AccountMetrics: React.FC<AccountMetricsProps> = ({
       </CardContent>
       <CardFooter className="mt-auto flex flex-col items-start gap-1 px-3 pb-3 pt-0">
         {brokerSync && relativeSyncAt && (
-          <p className="text-muted-foreground m-0 flex items-center gap-1.5 p-0 text-xs">
+          <p className="text-muted-foreground m-0 flex flex-wrap items-center gap-1.5 p-0 text-xs">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default">
-                    {t("account:broker_last_sync", { date: relativeSyncAt })}
+                    {t("account:broker_sync")} · {relativeSyncAt}
+                    {brokerSync.status && (
+                      <>
+                        {" · "}
+                        <span className={syncFailed ? "text-destructive" : undefined}>{brokerSync.status}</span>
+                      </>
+                    )}
+                    {formattedThrough && (
+                      <>{" · "}{t("account:broker_latest_data", { date: formattedThrough })}</>
+                    )}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -386,8 +411,10 @@ const AccountMetrics: React.FC<AccountMetricsProps> = ({
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            {syncFailed && <span className="text-destructive">· {brokerSync.status}</span>}
           </p>
+        )}
+        {brokerSync && originLabel && (
+          <p className="text-muted-foreground m-0 p-0 text-xs">{originLabel}</p>
         )}
         {performanceError ? (
           <p className="text-muted-foreground m-0 p-0 text-xs">

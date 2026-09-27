@@ -154,5 +154,10 @@
   },
   "more_count_other": "+{{count}} 項",
   "more_count_one": "+{{count}} 項",
-  "broker_last_sync": "上次同步 · {{date}}"
+  "broker_sync": "券商同步",
+  "broker_latest_data": "最新資料 {{date}}",
+  "origin_openapi_statements": "來源：券商 OpenAPI 對帳單介面",
+  "origin_flex_query": "來源：IBKR Flex 報表",
+  "origin_pdf_watch_folder": "來源：對帳單 PDF（手動匯入）",
+  "origin_gmail_statements": "來源：Gmail 對帳單郵件"
 }
