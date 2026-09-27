@@ -44,3 +44,20 @@ export function getBrokerSyncFromMeta(meta?: string | null): BrokerSyncMarker | 
     return null;
   }
 }
+
+/** Marker v2 origin label: localized label for a known vocabulary kind,
+ * else the engine-authored detail, else the raw kind. Unknown kinds
+ * surface verbatim rather than disappearing. */
+export function getOriginLabel(
+  marker: BrokerSyncMarker,
+  t: (key: string) => string,
+): string | null {
+  const KEYS: Record<string, string> = {
+    openapi_statements: "account:origin_openapi_statements",
+    flex_query: "account:origin_flex_query",
+    pdf_watch_folder: "account:origin_pdf_watch_folder",
+    gmail_statements: "account:origin_gmail_statements",
+  };
+  if (marker.origin && KEYS[marker.origin]) return t(KEYS[marker.origin]);
+  return marker.originDetail ?? marker.origin ?? null;
+}

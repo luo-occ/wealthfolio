@@ -1,6 +1,6 @@
 import { performancePeriodPnl, performanceSummaryReturn } from "@/lib/performance";
 import { isValuationComplete } from "@/lib/valuation";
-import type { BrokerSyncMarker } from "@/lib/account-meta";
+import { getOriginLabel, type BrokerSyncMarker } from "@/lib/account-meta";
 import { AccountValuation, CurrentValuationSplit, PerformanceResult } from "@/lib/types";
 import { cn, formatDistanceToNow, formatDate } from "@/lib/utils";
 import { PerformanceGrid } from "@/pages/account/performance-grid";
@@ -281,17 +281,7 @@ const AccountMetrics: React.FC<AccountMetricsProps> = ({
   const absoluteSyncAt = brokerSync?.at ? dateFormatting.formatDateTime(brokerSync.at) : null;
   const syncFailed = brokerSync?.status ? FAILED_SYNC_STATUSES.has(brokerSync.status) : false;
 
-  const ORIGIN_LABEL_KEYS: Record<string, string> = {
-    openapi_statements: "account:origin_openapi_statements",
-    flex_query: "account:origin_flex_query",
-    pdf_watch_folder: "account:origin_pdf_watch_folder",
-    gmail_statements: "account:origin_gmail_statements",
-  };
-  const originLabel = brokerSync
-    ? brokerSync.origin && ORIGIN_LABEL_KEYS[brokerSync.origin]
-      ? t(ORIGIN_LABEL_KEYS[brokerSync.origin])
-      : (brokerSync.originDetail ?? brokerSync.origin ?? null)
-    : null;
+  const originLabel = brokerSync ? getOriginLabel(brokerSync, t) : null;
   const formattedThrough = brokerSync?.through
     ? formatDate(brokerSync.through, dateFormatting)
     : null;
