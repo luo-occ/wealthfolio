@@ -14,6 +14,11 @@ export interface BrokerSyncMarker {
   at: string;
   /** Engine run status (CLEAN | APPLIED | GATE_FAILED | DEFECT | FAILED). */
   status?: string;
+  /** Ingest frontier (ISO YYYY-MM-DD) — "latest data" the ledger is built through. */
+  through?: string;
+  /** Data-mechanism vocabulary key (marker v2). */
+  origin?: string;
+  originDetail?: string;
 }
 
 export function getBrokerSyncFromMeta(meta?: string | null): BrokerSyncMarker | null {
@@ -28,6 +33,12 @@ export function getBrokerSyncFromMeta(meta?: string | null): BrokerSyncMarker | 
       at,
       source: typeof marker.source === "string" ? marker.source : undefined,
       status: typeof marker.status === "string" ? marker.status : undefined,
+      through:
+        typeof marker.through === "string" && /^\d{4}-\d{2}-\d{2}$/.test(marker.through)
+          ? marker.through
+          : undefined,
+      origin: typeof marker.origin === "string" ? marker.origin : undefined,
+      originDetail: typeof marker.originDetail === "string" ? marker.originDetail : undefined,
     };
   } catch {
     return null;

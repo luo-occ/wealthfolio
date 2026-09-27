@@ -38,4 +38,28 @@ describe("getBrokerSyncFromMeta", () => {
     const meta = JSON.stringify({ brokerSync: { at: "2026-09-19T07:00:00Z", status: "SOMETHING_NEW" } });
     expect(getBrokerSyncFromMeta(meta)?.status).toBe("SOMETHING_NEW");
   });
+
+  it("parses v2 fields (through/origin/originDetail)", () => {
+    const meta = JSON.stringify({ brokerSync: {
+      source: "caitong", at: "2026-09-25T23:03:52.267Z", status: "CLEAN",
+      through: "2026-09-14", origin: "pdf_watch_folder", originDetail: "财通对账单 PDF",
+    } });
+    expect(getBrokerSyncFromMeta(meta)).toEqual({
+      at: "2026-09-25T23:03:52.267Z", source: "caitong", status: "CLEAN",
+      through: "2026-09-14", origin: "pdf_watch_folder", originDetail: "财通对账单 PDF",
+    });
+  });
+
+  it("v1 markers parse unchanged (new fields undefined)", () => {
+    const meta = JSON.stringify({ brokerSync: { source: "caitong", at: "2026-09-19T07:00:12.345Z", status: "APPLIED" } });
+    const m = getBrokerSyncFromMeta(meta)!;
+    expect(m.through).toBeUndefined();
+    expect(m.origin).toBeUndefined();
+    expect(m.originDetail).toBeUndefined();
+  });
+
+  it("malformed through is dropped, not passed through", () => {
+    const meta = JSON.stringify({ brokerSync: { at: "2026-09-19T07:00:12.345Z", through: "20260914" } });
+    expect(getBrokerSyncFromMeta(meta)!.through).toBeUndefined();
+  });
 });
