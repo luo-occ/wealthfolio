@@ -50,14 +50,18 @@ export function getBrokerSyncFromMeta(meta?: string | null): BrokerSyncMarker | 
  * surface verbatim rather than disappearing. */
 export function getOriginLabel(
   marker: BrokerSyncMarker,
-  t: (key: string) => string,
+  t: (key: string, params?: Record<string, unknown>) => string,
 ): string | null {
-  const KEYS: Record<string, string> = {
-    openapi_statements: "account:origin_openapi_statements",
-    flex_query: "account:origin_flex_query",
-    pdf_watch_folder: "account:origin_pdf_watch_folder",
-    gmail_statements: "account:origin_gmail_statements",
+  // channel names are technical phrases (not prose) — they interpolate into
+  // the ONE localized template instead of one i18n key per kind
+  const CHANNELS: Record<string, string> = {
+    openapi_statements: "broker OpenAPI statements",
+    flex_query: "IBKR Flex query",
+    pdf_watch_folder: "statement PDFs (owner-dropped)",
+    gmail_statements: "statement emails (Gmail)",
   };
-  if (marker.origin && KEYS[marker.origin]) return t(KEYS[marker.origin]);
+  if (marker.origin && CHANNELS[marker.origin]) {
+    return t("account:origin_source", { source: CHANNELS[marker.origin] });
+  }
   return marker.originDetail ?? marker.origin ?? null;
 }
