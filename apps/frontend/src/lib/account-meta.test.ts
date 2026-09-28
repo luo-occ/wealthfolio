@@ -65,26 +65,29 @@ describe("getBrokerSyncFromMeta", () => {
 });
 
 describe("getOriginLabel", () => {
-  const t = (key: string) => `[${key}]`;
+  const t = (key: string, params?: Record<string, unknown>) =>
+    params ? `[${key}](${JSON.stringify(params)})` : `[${key}]`;
   const marker = (fields: Partial<BrokerSyncMarker>) => ({ at: "2026-09-25T23:03:52.267Z", ...fields });
 
-  it("known vocabulary kinds resolve through t with the right i18n key", () => {
+  it("known vocabulary kinds interpolate the ONE template with the channel name", () => {
     expect(getOriginLabel(marker({ origin: "openapi_statements" }), t)).toBe(
-      "[account:origin_openapi_statements]",
+      '[account:origin_source]({"source":"broker OpenAPI statements"})',
     );
-    expect(getOriginLabel(marker({ origin: "flex_query" }), t)).toBe("[account:origin_flex_query]");
+    expect(getOriginLabel(marker({ origin: "flex_query" }), t)).toBe(
+      '[account:origin_source]({"source":"IBKR Flex query"})',
+    );
     expect(getOriginLabel(marker({ origin: "pdf_watch_folder" }), t)).toBe(
-      "[account:origin_pdf_watch_folder]",
+      '[account:origin_source]({"source":"statement PDFs (owner-dropped)"})',
     );
     expect(getOriginLabel(marker({ origin: "gmail_statements" }), t)).toBe(
-      "[account:origin_gmail_statements]",
+      '[account:origin_source]({"source":"statement emails (Gmail)"})',
     );
   });
 
   it("known kind wins over detail (detail is the fallback, never an override)", () => {
     expect(
       getOriginLabel(marker({ origin: "pdf_watch_folder", originDetail: "财通对账单 PDF" }), t),
-    ).toBe("[account:origin_pdf_watch_folder]");
+    ).toContain("account:origin_source");
   });
 
   it("unknown kind + detail → the engine-authored detail", () => {
