@@ -174,6 +174,7 @@ export const HoldingsTable = ({
         dateFormatting,
         navigate,
         onClassify,
+        positionDisplay,
       ).filter((column) => {
         if (!("id" in column) || column.id == null) return false;
         return isClosedView
@@ -188,6 +189,7 @@ export const HoldingsTable = ({
       dateFormatting,
       navigate,
       onClassify,
+      positionDisplay,
       isClosedView,
     ],
   );
@@ -228,22 +230,6 @@ export const HoldingsTable = ({
       options: assetsTypes,
     },
   ];
-
-  const columns = getColumns(
-    t,
-    isBalanceHidden,
-    showConvertedValues,
-    formatting,
-    dateFormatting,
-    navigate,
-    onClassify,
-    positionDisplay,
-  ).filter((column) => {
-    if (!("id" in column) || column.id == null) return false;
-    return isClosedView
-      ? CLOSED_POSITION_COLUMN_IDS.has(column.id)
-      : !CLOSED_ONLY_COLUMN_IDS.has(column.id);
-  });
 
   return (
     <div className="flex h-full flex-col">
