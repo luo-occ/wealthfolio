@@ -551,32 +551,26 @@ export function AccountForm({
                       <label className="text-sm font-medium">
                         {t(`settings:accounts.${labelKey}`)}
                       </label>
-                      <ToggleGroup
-                        type="single"
+                      <AnimatedToggleGroup
+                        size="md"
+                        aria-label={t(`settings:accounts.${labelKey}`)}
                         value={value}
                         onValueChange={(v) => {
-                          if (!v) return;
                           const updatedMeta = setPositionDisplayInMeta(form.getValues("meta"), {
-                            [key]: v as PositionLabelField,
+                            [key]: v,
                           });
                           form.setValue("meta", updatedMeta, { shouldDirty: true });
                         }}
-                        className="bg-muted grid h-11 grid-cols-2 rounded-lg p-1"
-                      >
-                        {options.map((field) => (
-                          <ToggleGroupItem
-                            key={field}
-                            value={field}
-                            className={cashClassificationItemClassName}
-                          >
-                            {t(
-                              field === "symbol"
-                                ? "settings:accounts.form_position_display_symbol"
-                                : "settings:accounts.form_position_display_name",
-                            )}
-                          </ToggleGroupItem>
-                        ))}
-                      </ToggleGroup>
+                        className="grid w-full grid-cols-2"
+                        items={options.map((field) => ({
+                          value: field,
+                          label: t(
+                            field === "symbol"
+                              ? "settings:accounts.form_position_display_symbol"
+                              : "settings:accounts.form_position_display_name",
+                          ),
+                        }))}
+                      />
                     </div>
                   );
                 })}

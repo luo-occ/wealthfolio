@@ -364,19 +364,17 @@ const AccountMetrics: React.FC<AccountMetricsProps> = ({
           <p className="text-muted-foreground m-0 flex flex-wrap items-center gap-1.5 p-0 text-xs">
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="cursor-default">
-                    {t("account:broker_sync")} · {relativeSyncAt}
-                    {brokerSync.status && (
-                      <>
-                        {" · "}
-                        <span className={syncFailed ? "text-destructive" : undefined}>{brokerSync.status}</span>
-                      </>
-                    )}
-                    {formattedThrough && (
-                      <>{" · "}{t("account:broker_latest_data", { date: formattedThrough })}</>
-                    )}
-                  </span>
+                <TooltipTrigger render={<span className="cursor-default" />}>
+                  {t("account:broker_sync")} · {relativeSyncAt}
+                  {brokerSync.status && (
+                    <>
+                      {" · "}
+                      <span className={syncFailed ? "text-destructive" : undefined}>{brokerSync.status}</span>
+                    </>
+                  )}
+                  {formattedThrough && (
+                    <>{" · "}{t("account:broker_latest_data", { date: formattedThrough })}</>
+                  )}
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>{absoluteSyncAt}</p>
